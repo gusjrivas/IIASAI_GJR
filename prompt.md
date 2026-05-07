@@ -1,18 +1,19 @@
 # Anotación del prompt que generó el código
 
-Se diseñó una interfaz deliberadamente incómoda para registrar fecha de nacimiento, cumpliendo con que toda la implementación viva en un único archivo con HTML, CSS y JavaScript embebidos.
+Se rediseñó la UI para mantener una experiencia deliberadamente mala, incorporando nuevas reglas de interacción solicitadas y conservando toda la implementación en un único `index.html` con HTML/CSS/JS embebidos.
 
 ## Objetivo del prompt
-- Crear una UX intencionalmente mala, pero utilizable.
-- Mantener toda la lógica dinámica en `<script>`.
-- Evitar dependencias externas.
+- Mantener una UX anti-usuario pero alcanzable.
+- Día mediante barra de volumen y comportamiento punitivo de reinicio.
+- Mes mediante juego de memoria con grilla desordenada y ocultamiento de etiquetas.
+- Mantener el año con lógica de desorden y agregar reinicio específico.
 
 ## Decisiones tomadas
-1. **Día difícil**: contador automático que el usuario debe detener en el momento exacto.
-2. **Mes confuso**: selector invertido y poco descriptivo.
-3. **Año hostil**: input que reordena los dígitos, más un botón para empeorar el desorden.
-4. **Feedback frustrante**: mensajes de error severos y microinteracciones de “shake”.
-5. **Validación final**: a pesar de la fricción, permite completar exitosamente una fecha válida.
+1. **Día con globo**: slider de 1 a 31 que infla un globo visualmente.
+2. **Castigo por bajar**: si el usuario intenta disminuir el día, el sistema reinicia a 1 (desinflado total).
+3. **Mes por memoria**: grilla aleatoria de meses; se muestran nombres por pocos segundos y luego se ocultan.
+4. **Fallo en mes**: si no acierta en el primer intento, se reinicia la ronda y se vuelven a mostrar los meses desordenados.
+5. **Año hostil + reset**: continúa el mezclado automático de dígitos y se agrega botón para reiniciar el ingreso del año.
 
 ## Resultado esperado
-Una experiencia frustrante de forma intencional, aunque técnicamente funcional para terminar ingresando una fecha de nacimiento real.
+Una interfaz más frustrante que la versión anterior, pero funcional para completar finalmente una fecha de nacimiento válida.

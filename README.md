@@ -1,21 +1,23 @@
 # UI de Fecha de Nacimiento con Mala UX (intencional)
 
-Este repositorio contiene una implementación single-file (en `index.html`) que combina HTML + CSS + JavaScript para una interfaz dinámica orientada a una **mala experiencia de usuario** a propósito.
+Este repositorio contiene una implementación single-file en `index.html` con HTML, CSS y JavaScript embebidos para crear una experiencia de ingreso de fecha de nacimiento deliberadamente incómoda.
 
 ## Qué funcionó
-- Se construyó una interfaz totalmente autocontenida en un solo archivo.
-- La interacción es dinámica mediante JavaScript dentro de `<script>`.
-- El flujo permite capturar día, mes y año de nacimiento.
-- Existe validación de fecha real (incluyendo consistencia de día/mes/año).
-- La experiencia es difícil, pero completables: el usuario puede llegar a una fecha válida.
+- Se mantuvo el requisito de un único archivo para la UI dinámica.
+- El **día** se ingresa con una barra (1-31) que infla un globo visual.
+- Si el usuario intenta bajar el día, el globo se desinfla completamente y el valor vuelve a 1.
+- El **mes** se elige desde una grilla desordenada con nombres que se ocultan, forzando memoria visual.
+- Si el mes se falla, la ronda se reinicia mostrando otra vez los meses desordenados.
+- El **año** conserva la lógica de mezcla de dígitos y ahora incluye botón para reiniciar su ingreso.
+- La validación final comprueba consistencia real de fecha.
 
 ## Qué no funcionó (o limitaciones)
-- La UX es deliberadamente mala, por lo que puede ser molesta para pruebas repetidas.
-- El campo de año puede requerir varios intentos por el desorden automático.
-- El mecanismo aleatorio de bloqueo de día puede fallar varias veces antes de dejar continuar.
-- No hay persistencia de datos ni accesibilidad avanzada (porque el objetivo fue “anti-UX”).
+- La interacción del mes es muy frustrante y depende de memoria a corto plazo.
+- El castigo del día puede hacer tedioso alcanzar valores altos.
+- La introducción del año sigue siendo inestable por el desorden automático.
+- No se incorporó persistencia ni mejoras de accesibilidad (por diseño anti-UX).
 
 ## Archivos
-- `index.html`: implementación completa de la UI (HTML/CSS/JS).
+- `index.html`: implementación completa (HTML/CSS/JS).
 - `prompt.md`: anotación del prompt y decisiones de diseño.
-- `README.md`: resumen de funcionamiento y limitaciones.
+- `README.md`: explicación de funcionamiento y limitaciones.
