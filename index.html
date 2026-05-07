@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ingresa tu fecha (si puedes)</title>
+  <style>
+    body { margin:0; font-family:"Comic Sans MS", cursive; background: repeating-linear-gradient(45deg,#ff00aa,#ff00aa 8px,#00e1ff 8px,#00e1ff 16px); min-height:100vh; display:grid; place-items:center; }
+    .panel { width:min(980px,96vw); background:#fff8; border:6px dashed #111; padding:12px; box-shadow:10px 10px 0 #000; }
+    .grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .box { border:2px solid #000; background:#fff; padding:8px; min-height:190px; }
+    .label { text-transform:uppercase; font-size:.82rem; letter-spacing:.08em; }
+    .tiny { font-size:.8rem; }
+    button, input { width:100%; margin-top:6px; padding:8px; border:2px outset #666; font-family:inherit; }
+    #console { height:120px; overflow:auto; background:#000; color:#0f0; font-family:monospace; padding:6px; margin-top:8px; }
+    .balloon-wrap { display:grid; grid-template-columns:100px 1fr; gap:8px; align-items:end; }
+    .balloon { width:70px; height:70px; border-radius:50%; background:#f44; margin:auto; transition:.2s ease; box-shadow: inset -8px -10px 0 #0002; }
+    .string { width:2px; height:40px; background:#333; margin:auto; }
+    .progress { appearance:none; height:20px; background:#ddd; border:2px solid #333; }
+    .progress::-webkit-slider-thumb { appearance:none; width:16px; height:30px; background:#222; }
+    .month-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:6px; }
+    .month-btn { padding:10px 4px; min-height:50px; border:2px solid #222; background:#ffe; cursor:pointer; font-size:.85rem; }
+    .hidden-label { color:transparent; text-shadow:0 0 8px #222; }
+    .shake { animation:shake .25s linear 1; }
+    @keyframes shake {0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+    .success { background:#0a2; color:#fff; font-weight:700; padding:6px; }
+  </style>
+</head>
+<body>
+  <div class="panel" id="panel">
+    <h1>Formulario de Fecha de Nacimiento (Más difícil todavía)</h1>
+    <p class="tiny"><b>Reglas hostiles:</b> día por globo, mes por memoria visual, año desordenado.</p>
+
+    <div class="grid">
+      <div class="box">
+        <div class="label">Paso 1: Día con globo</div>
+        <p class="tiny">Sube el día con una barra (1-31). Si te pasas y quieres bajar, el globo explota y vuelves a 1.</p>
+        <div class="balloon-wrap">
+          <div>
+            <div class="balloon" id="balloon"></div>
+            <div class="string"></div>
+          </div>
+          <div>
+            <input id="daySlider" class="progress" type="range" min="1" max="31" value="1" />
+            <input id="dayValue" readonly value="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="label">Paso 2: Mes por memoria</div>
+        <p class="tiny">Mira los meses desordenados. Luego se ocultan. Si fallas, se re-muestran y reinicias.</p>
+        <button id="startMonthRound">Comenzar ronda de memoria</button>
+        <div class="month-grid" id="monthGrid"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Paso 3: Año mini-juego</div>
+        <p class="tiny">Escribe tu año, pero los dígitos se mezclan automáticamente.</p>
+        <input id="yearInput" maxlength="4" placeholder="????" />
+        <button id="scrambleYear">Desordenar más</button>
+        <button id="resetYear">Reiniciar año</button>
+      </div>
+    </div>
+
+    <button id="validate">Validar fecha (si te atreves)</button>
+    <div id="result" class="tiny"></div>
+    <div id="console"></div>
+  </div>
+
+  <script>
+    const panel = document.getElementById('panel');
+    const logEl = document.getElementById('console');
+    const daySlider = document.getElementById('daySlider');
+    const dayValue = document.getElementById('dayValue');
+    const balloon = document.getElementById('balloon');
+    const monthGrid = document.getElementById('monthGrid');
+    const startMonthRoundBtn = document.getElementById('startMonthRound');
+    const yearInput = document.getElementById('yearInput');
+    const scrambleYearBtn = document.getElementById('scrambleYear');
+    const resetYearBtn = document.getElementById('resetYear');
+    const validateBtn = document.getElementById('validate');
+    const resultEl = document.getElementById('result');
+
+    const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const state = { day:1, prevDay:1, month:null, monthReady:false, monthLocked:false, year:'' };
+
+    const log = (m) => { logEl.innerHTML += `[${new Date().toLocaleTimeString()}] ${m}<br>`; logEl.scrollTop = logEl.scrollHeight; };
+
+    function updateBalloon() {
+      const size = 40 + state.day * 2.4;
+      balloon.style.width = `${size}px`;
+      balloon.style.height = `${size}px`;
+      dayValue.value = state.day;
+    }
+
+    daySlider.addEventListener('input', () => {
+      const current = Number(daySlider.value);
+      if (current < state.prevDay) {
+        state.day = 1;
+        state.prevDay = 1;
+        daySlider.value = 1;
+        updateBalloon();
+        log('💥 Intentaste bajar el día: globo desinflado, vuelves a 1.');
+        panel.classList.add('shake');
+        setTimeout(()=>panel.classList.remove('shake'),260);
+        return;
+      }
+      state.day = current;
+      state.prevDay = current;
+      updateBalloon();
+    });
+
+    function shuffle(arr){ return arr.map(v=>({v,s:Math.random()})).sort((a,b)=>a.s-b.s).map(x=>x.v); }
+
+    function renderMonthGrid(showLabels) {
+      monthGrid.innerHTML = '';
+      const shuffled = shuffle(monthNames.map((name, idx)=>({name, month: idx+1})));
+      shuffled.forEach(item => {
+        const b = document.createElement('button');
+        b.className = 'month-btn' + (showLabels ? '' : ' hidden-label');
+        b.textContent = item.name;
+        b.dataset.month = item.month;
+        b.addEventListener('click', () => selectMonth(item.month));
+        monthGrid.appendChild(b);
+      });
+      state.monthReady = !showLabels;
+    }
+
+    function startMonthRound() {
+      state.monthLocked = false;
+      state.month = null;
+      renderMonthGrid(true);
+      log('👀 Memoriza rápido: los nombres se ocultarán en 2.5 segundos.');
+      setTimeout(() => {
+        [...monthGrid.children].forEach(btn => btn.classList.add('hidden-label'));
+        state.monthReady = true;
+        log('🙈 Nombres ocultos. Ahora adivina tu mes en la primera.');
+      }, 2500);
+    }
+
+    function selectMonth(month) {
+      if (!state.monthReady || state.monthLocked) return;
+      const userMonth = prompt('Ingresa el número de tu mes real (1-12) para comprobar:');
+      const target = Number(userMonth);
+      if (!target || target < 1 || target > 12) { log('⚠️ Número de mes inválido.'); return; }
+      if (month === target) {
+        state.monthLocked = true;
+        state.month = month;
+        log(`✅ Mes acertado a la primera: ${monthNames[month-1]}.`);
+      } else {
+        log('❌ Fallaste. Se re-muestran meses desordenados y debes reiniciar.');
+        startMonthRound();
+      }
+    }
+
+    function scramble(str){ const a=str.split(''); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.join(''); }
+
+    yearInput.addEventListener('input', ()=>{
+      let clean = yearInput.value.replace(/\D/g,'').slice(0,4);
+      if (clean.length > 1) clean = scramble(clean);
+      yearInput.value = clean;
+      state.year = clean;
+    });
+    scrambleYearBtn.addEventListener('click', ()=>{ yearInput.value = scramble(yearInput.value); state.year = yearInput.value; log('😈 Año re-desordenado.'); });
+    resetYearBtn.addEventListener('click', ()=>{ yearInput.value=''; state.year=''; log('↩️ Año reiniciado.'); });
+
+    validateBtn.addEventListener('click', ()=>{
+      if (!state.monthLocked || state.year.length !== 4) { resultEl.textContent='Completa mes y año correctamente.'; return; }
+      const y = Number(state.year), m = state.month, d = state.day;
+      const dt = new Date(y,m-1,d);
+      const ok = dt.getFullYear()===y && dt.getMonth()===m-1 && dt.getDate()===d;
+      if (!ok || y < 1900 || y > new Date().getFullYear()) { resultEl.textContent='Fecha inválida. Vuelve a sufrir.'; log('❌ Fecha inválida.'); return; }
+      resultEl.textContent = `¡Logrado! ${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+      resultEl.className = 'success';
+      log('🎉 Fecha aceptada.');
+    });
+
+    updateBalloon();
+    renderMonthGrid(true);
+    log('Sistema iniciado. Usa "Comenzar ronda de memoria" para el mes.');
+    startMonthRoundBtn.addEventListener('click', startMonthRound);
+  </script>
+</body>
+</html>
