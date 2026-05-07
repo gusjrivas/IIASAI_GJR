@@ -1,6 +1,6 @@
 # UI de Fecha de Nacimiento con Mala UX (intencional)
 
-Este repositorio contiene una implementación single-file (en `index.htl`) que combina HTML + CSS + JavaScript para una interfaz dinámica orientada a una **mala experiencia de usuario** a propósito.
+Este repositorio contiene una implementación single-file (en `index.html`) que combina HTML + CSS + JavaScript para una interfaz dinámica orientada a una **mala experiencia de usuario** a propósito.
 
 ## Qué funcionó
 - Se construyó una interfaz totalmente autocontenida en un solo archivo.
@@ -16,6 +16,6 @@ Este repositorio contiene una implementación single-file (en `index.htl`) que c
 - No hay persistencia de datos ni accesibilidad avanzada (porque el objetivo fue “anti-UX”).
 
 ## Archivos
-- `index.htl`: implementación completa de la UI (HTML/CSS/JS).
+- `index.html`: implementación completa de la UI (HTML/CSS/JS).
 - `prompt.md`: anotación del prompt y decisiones de diseño.
 - `README.md`: resumen de funcionamiento y limitaciones.
